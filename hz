@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -eo pipefail
+
+STRINGS=$(command -v strings)
+FZF=$(command -v fzf)
+
+check_dependencies() {
+  if [[ -z "${STRINGS}" ]]
+  then
+    echo "==> strings binary not found" 1>&2
+    exit 1
+  fi
+
+  if [[ -z "${FZF}" ]]
+  then
+    echo "==> fzf binary not found. Is it installed?" 1>&2
+    exit 1
+  fi
+}
+
+
+usage() {
+    :
+}
+
+one_arg() {
+  if [[ "$#" -gt 1 ]] || [[ "$#" -eq 0 ]]
+  then
+      echo "==> Please provide only a single binary"
+      exit 1
+  fi
+}
+
+assign_binary_with_path() {
+  if command -v "${@}"
+  then
+      binary=$(command -v "$*")
+  else
+      echo "==> Binary not found in path"
+      exit 1
+  fi
+}
+
+main() {
+  check_dependencies
+
+  one_arg "${@}"
+
+  assign_binary_with_path "${@}"
+
+  strings "${binary}" | fzf
+}
+
+main "$@"
